@@ -40,7 +40,7 @@
       pid: primaryTraceEvent.pid,
       cat: entry.entryType,
       bind_id: '0x' + bind_id.toString(16),
-      ts: entry.eventHandlersBegin * 1000,
+      ts: entry.processingStart * 1000,
       flow_in: true,
     };
 
@@ -72,10 +72,10 @@
       }
 
       if (entry.entryType == 'event') {
-        // We display the queueing time in handleEventEntry, remove it from the
+        // We display the queueing time in handleEventEntry, and remove it from the
         // primary event slice.
-        traceEvent.ts = entry.eventHandlersBegin * 1000;
-        entry.duration = entry.eventHandlersEnd - entry.eventHandlersBegin;
+        traceEvent.ts = entry.processingStart * 1000;
+        entry.duration = entry.commitTime - entry.processingStart;
         // Use entry name first to sort event types next to their queueing times.
         traceEvent.name = entry.name + '::' + entry.entryType;
 
@@ -125,8 +125,6 @@
     'resource',
     'navigation',
     'event',
-    'frame',
-    'styleupdate',
     'paint',
     'longtask',
     'mark',

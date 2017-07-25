@@ -5,27 +5,26 @@
   // data structure, sorted on timestamp.
   const pendingEntries = new Map();
 
-  const frameObserver = new PerformanceObserver((list) => {
-    for (const entry of list.getEntries()) {
-      if (entry.entryType == "frame") {
-        for (const [hash, eventEntry] of pendingEntries.entries()) {
-          if (eventEntry.eventHandlersEnd < entry.startTime) {
-            // Event was before long frame. We won't dispatch this entry.
-            continue;
-          } else if (entry.startTime + entry.duration < eventEntry.eventHandlersBegin) {
-            // Event was after long frame. Wait for the next long frame.
-            continue;
-          }
-
-          // Event was during long frame, dispatch it.
-          performance.emit(eventEntry);
-          pendingEntries.delete(hash);
-        }
+  function frameStart() {
+    let now = performance.now();
+    for (const [hash, entry] of pendingEntries.entries()) {
+      let elapsed = now - entry.startTime;
+      if (elapsed > 50) {
+        entry.commitTime = now;
+        performance.emit(entry);
       }
+      pendingEntries.delete(hash);
     }
-  });
+  }
 
-  frameObserver.observe({entryTypes:['frame']});
+  function rAF(t) {
+    window.requestAnimationFrame(rAF);
+
+    if (pendingEntries.size > 0)
+      window.setTimeout(frameStart, 0);
+  }
+
+  window.requestAnimationFrame(rAF);
 
   function eventHash(e) {
     // TODO - better hash function.
@@ -39,25 +38,25 @@
       pendingEntries.set(hash, newEntryData);
       return newEntryData;
     }
-    entry.eventHandlersEnd = newEntryData.eventHandlersEnd;
-    entry.duration = newEntryData.duration;
+    entry.processingEnd = newEntryData.processingEnd;
     return entry;
   }
 
   const originalAddEventListener = EventTarget.prototype.addEventListener;
   EventTarget.prototype.addEventListener = function(type, f, args) {
     originalAddEventListener.call(this, type, (e) => {
-      const eventHandlersBegin = performance.now();
+      const processingStart = performance.now();
       f(e);
-      const eventHandlerEnd = performance.now();
+      const processingEnd = performance.now();
       const entry = {
         name: type,
         entryType: 'event',
         startTime: e.timeStamp,
-        eventHandlersBegin: eventHandlersBegin,
-        eventHandlersEnd: eventHandlerEnd,
-        duration: eventHandlerEnd - e.timeStamp,
+        processingStart: processingStart,
+        processingEnd: processingEnd,
+        duration: 0,
         cancelable: event.cancelable,
+        eventHasCommit: true,
       };
       addOrCoalesceEntry(e, entry);
     }, args);
