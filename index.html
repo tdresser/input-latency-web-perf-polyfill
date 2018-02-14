@@ -3,48 +3,17 @@
 <head>
 <script src="performance_timeline_emit.js"></script>
 <script src="event_timing.js"></script>
-<script src="performance_observer_tracing.js"></script>
 <script>
-window.addEventListener("load", function() {
-  document.addEventListener("click", function() {
-    let now = performance.now();
 
-    performance.mark("ClickAStart");
-    while (performance.now() < now + 500){}
-    performance.mark("ClickAEndBStart");
-    now = performance.now();
-    while (performance.now() < now + 500){}
-    performance.mark("ClickBEnd");
-    performance.measure("ClickA", "ClickAStart", "ClickAEndBStart");
-    performance.measure("ClickB", "ClickAEndBStart", "ClickBEnd");
-  });
-
-  document.addEventListener("mousemove", () => {});
+const po = new PerformanceObserver((e) => {
+  for (let entry of e.getEntries()) {
+    console.log(entry);
+  }
 });
-
-function fetchResource() {
-  var oReq = new XMLHttpRequest();
-  oReq.open('get', 'https://thecatapi.com/api/images/get?format=src&type=gif', true);
-  oReq.send();
-}
+po.observe({entryTypes:["event"]})
 
 </script>
-<style>
-#box {
-  width:50px;
-  height:50px;
-  background-color:blue;
-}
-
-#box:hover {
-  background-color:red;
-}
-
-</style>
 </head>
 <body>
-<div id="box" report-styleupdate></div>
-<div class="button"> <a href="#" onclick="fetchResource()">Fetch Resource</a> </div>
-<div class="button"> <a href="#" onclick="downloadTrace()">Download Trace</a> </div>
 </body>
 </html>

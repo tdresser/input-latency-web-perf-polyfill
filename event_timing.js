@@ -5,26 +5,13 @@
   // data structure, sorted on timestamp.
   const pendingEntries = new Map();
 
-  function frameStart() {
-    let now = performance.now();
+  function rIC() {
+    window.requestIdleCallback(rIC);
     for (const [hash, entry] of pendingEntries.entries()) {
-      let elapsed = now - entry.startTime;
-      if (elapsed > 50) {
-        entry.commitTime = now;
-        performance.emit(entry);
-      }
+      performance.emit(entry);
       pendingEntries.delete(hash);
     }
   }
-
-  function rAF(t) {
-    window.requestAnimationFrame(rAF);
-
-    if (pendingEntries.size > 0)
-      window.setTimeout(frameStart, 0);
-  }
-
-  window.requestAnimationFrame(rAF);
 
   function eventHash(e) {
     // TODO - better hash function.
@@ -32,12 +19,17 @@
   }
 
   function addOrCoalesceEntry(e, newEntryData) {
+    window.requestIdleCallback(rIC);
+
     const hash = eventHash(e);
     const entry = pendingEntries.get(hash);
     if (!entry) {
       pendingEntries.set(hash, newEntryData);
       return newEntryData;
     }
+    // We aren't certain this is the last event listener. Overwrite
+    // processingEnd each time another listener ends. We'll see the correct end
+    // time in the idle callback.
     entry.processingEnd = newEntryData.processingEnd;
     return entry;
   }
@@ -56,9 +48,13 @@
         processingEnd: processingEnd,
         duration: 0,
         cancelable: event.cancelable,
-        eventHasCommit: true,
       };
       addOrCoalesceEntry(e, entry);
     }, args);
   };
+
+  const eventTypeNames = ["click", "mousemove", "keydown", "input", "keyup", "touchstart", "touchmove", "pointerdown"]
+  for (let i of eventTypeNames) {
+    document.addEventListener(i, () => {});
+  }
 })();
