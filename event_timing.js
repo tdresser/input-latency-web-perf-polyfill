@@ -47,7 +47,7 @@
         processingStart: processingStart,
         processingEnd: processingEnd,
         duration: 0,
-        cancelable: event.cancelable,
+        cancelable: e.cancelable,
       };
       addOrCoalesceEntry(e, entry);
     }, args);
