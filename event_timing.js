@@ -20,7 +20,10 @@
 
   function addOrCoalesceEntry(e, newEntryData) {
     window.requestIdleCallback(rIC);
-
+    window.requestAnimationFrame((lastPaintTime)=>{
+      newEntryData.lastPaintTime = lastPaintTime;
+      newEntryData.nextPaintTime = performance.now();
+    });
     const hash = eventHash(e);
     const entry = pendingEntries.get(hash);
     if (!entry) {
