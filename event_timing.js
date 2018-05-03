@@ -20,31 +20,31 @@
     return e.timeStamp + e.type;
   }
 
-  let paints = [];
+  let paintTimes = [];
   let cntPaintsToRecort = 0;
   function logPaintTimes() {
     window.requestAnimationFrame(logPaintTimes);
     if (cntPaintsToRecort <= 0) {
-      paints = [];
+      paintTimes = [];
       return;
     }
     const now = performance.now();
-    paints.push(now);
+    paintTimes.push(now);
     console.log("paint: " + performance.now());
     cntPaintsToRecort--;
   }
 
   window.addEventListener("message", (event) => {
-    const fid = parseInt(event.data.frame_id);
-    iframes[fid].iframe.remove();
-    iframes[fid].entry.nextPaint = event.data.fp - performance.timeOrigin;
-    delete iframes[fid];
+    const id = parseInt(event.data.frameId);
+    iframes[id].iframe.remove();
+    iframes[id].entry.nextPaint = event.data.fp - performance.timeOrigin;
+    delete iframes[id];
   }, false);
 
   window.requestAnimationFrame(logPaintTimes);
 
   const iframes = {};
-  let frame_id = 0;
+  let frameId = 0;
   function addOrCoalesceEntry(e, newEntryData) {
     window.requestIdleCallback(rIC);
     const hash = eventHash(e);
@@ -64,11 +64,11 @@
     iframe.style.width = "40px";
     iframe.style.height = "30px";
     iframe.scrolling = "no";
-    iframe.name = frame_id;
-    iframes[frame_id] = {iframe, entry};
-    frame_id ++;
+    iframe.name = frameId;
+    iframes[frameId] = {iframe, entry};
+    frameId++;
     document.body.appendChild(iframe);
-    // Record 4 more paints ahead.
+    // Record 4 more paintTimes ahead.
     cntPaintsToRecort += 4;
     return entry;
   }
@@ -101,8 +101,8 @@
   const po = new PerformanceObserver((e) => {
     for (let entry of e.getEntries()) {
       console.log(JSON.stringify(entry));
-      const paintsInRange = paints.filter(p=> p > entry.processingStart && p < entry.nextPaint);
-      console.log(`processing end: ${entry.processingEnd}, paints in between: ${paintsInRange.length}, next paint: ${entry.nextPaint}`);
+      const paintsInRange = paintTimes.filter(p=> p > entry.processingStart && p < entry.nextPaint);
+      console.log(`processing end: ${entry.processingEnd}, paintTimes in between: ${paintsInRange.length}, next paint: ${entry.nextPaint}`);
     }
   });
   po.observe({entryTypes:["event"]})

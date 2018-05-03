@@ -8,22 +8,16 @@
 <body>
 </body>
 <script type="text/javascript">
-  function once(last) {
-    const paints = performance.getEntriesByType('paint');
-    if (paints.length === 0) {
-      window.requestAnimationFrame(once);
-      return;
-    }
-    let fp = paints.filter(e => {
-      return e.name == "first-paint";
-    });
+  new PerformanceObserver((entryList, observer)=>{
+    const es = entryList.getEntriesByName('first-paint');
+    if (es.length === 0) return;
+    observer.disconnect();
     top.postMessage({
-      'fp': fp[0].startTime + performance.timeOrigin,
-      'frame_id': window.name
+      'fp': es[0].startTime + performance.timeOrigin,
+      'frameId': window.name
     }, '*');
-  }
+  }).observe({entryTypes: ["paint"]});
 
-  window.requestAnimationFrame(once);
   const div = document.createElement('div');
   div.innerHTML = window.name;
   document.body.appendChild(div);
