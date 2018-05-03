@@ -13,7 +13,7 @@
     if (es.length === 0) return;
     observer.disconnect();
     top.postMessage({
-      'fp': es[0].startTime + performance.timeOrigin,
+      'firstPaint': es[0].startTime + performance.timeOrigin,
       'frameId': window.name
     }, '*');
   }).observe({entryTypes: ["paint"]});
