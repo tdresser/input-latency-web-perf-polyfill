@@ -5,6 +5,8 @@
   <meta charset="utf-8">
   <title></title>
 </head>
+<body>
+</body>
 <script type="text/javascript">
   function once(last) {
     const paints = performance.getEntriesByType('paint');
@@ -17,16 +19,13 @@
     });
     top.postMessage({
       'fp': fp[0].startTime + performance.timeOrigin,
-      'id': window.name
+      'frame_id': window.name
     }, '*');
   }
-  function run() {
-    window.requestAnimationFrame(once);
-    const div = document.createElement('div');
-    div.innerHTML = window.name;
-    document.body.appendChild(div);
-  }
+
+  window.requestAnimationFrame(once);
+  const div = document.createElement('div');
+  div.innerHTML = window.name;
+  document.body.appendChild(div);
 </script>
-<body onload='run()'>
-</body>
 </html>

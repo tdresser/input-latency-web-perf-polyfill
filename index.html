@@ -5,12 +5,12 @@
 <script src="event_timing.js"></script>
 <script>
 
-const po = new PerformanceObserver((e) => {
-  for (let entry of e.getEntries()) {
-    console.log(entry);
-  }
-});
-po.observe({entryTypes:["event"]})
+// const po = new PerformanceObserver((e) => {
+//   for (let entry of e.getEntries()) {
+//     console.log(JSON.stringify(entry));
+//   }
+// });
+// po.observe({entryTypes:["event"]})
 
 </script>
 </head>

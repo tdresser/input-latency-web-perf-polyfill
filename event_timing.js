@@ -20,23 +20,31 @@
     return e.timeStamp + e.type;
   }
 
-  let cnt = 3;
+  let paints = [];
+  let cntPaintsToRecort = 0;
   function logPaintTimes() {
-    console.log("paint: " + performance.now());
-    if (cnt > 3) return;
     window.requestAnimationFrame(logPaintTimes);
-    cnt++;
+    if (cntPaintsToRecort <= 0) {
+      paints = [];
+      return;
+    }
+    const now = performance.now();
+    paints.push(now);
+    console.log("paint: " + performance.now());
+    cntPaintsToRecort--;
   }
 
   window.addEventListener("message", (event) => {
-    const fid = parseInt(event.data.id);
+    const fid = parseInt(event.data.frame_id);
     iframes[fid].iframe.remove();
     iframes[fid].entry.nextPaint = event.data.fp - performance.timeOrigin;
     delete iframes[fid];
   }, false);
 
+  window.requestAnimationFrame(logPaintTimes);
+
   const iframes = {};
-  let id = 0;
+  let frame_id = 0;
   function addOrCoalesceEntry(e, newEntryData) {
     window.requestIdleCallback(rIC);
     const hash = eventHash(e);
@@ -56,13 +64,12 @@
     iframe.style.width = "40px";
     iframe.style.height = "30px";
     iframe.scrolling = "no";
-    iframe.name = id;
-    iframes[id] = {iframe, entry};
-    id ++;
+    iframe.name = frame_id;
+    iframes[frame_id] = {iframe, entry};
+    frame_id ++;
     document.body.appendChild(iframe);
-    cnt = 0;
-    window.requestAnimationFrame(logPaintTimes);
-    // console.log("end of addOrCoalesceEntry:", performance.now());
+    // Record 4 more paints ahead.
+    cntPaintsToRecort += 4;
     return entry;
   }
 
@@ -89,4 +96,14 @@
   for (let i of eventTypeNames) {
     document.addEventListener(i, () => {});
   }
+
+  // temporary
+  const po = new PerformanceObserver((e) => {
+    for (let entry of e.getEntries()) {
+      console.log(JSON.stringify(entry));
+      const paintsInRange = paints.filter(p=> p > entry.processingStart && p < entry.nextPaint);
+      console.log(`processing end: ${entry.processingEnd}, paints in between: ${paintsInRange.length}, next paint: ${entry.nextPaint}`);
+    }
+  });
+  po.observe({entryTypes:["event"]})
 })();
