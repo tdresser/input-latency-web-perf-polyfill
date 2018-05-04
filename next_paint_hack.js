@@ -35,7 +35,7 @@ var global = this;
     Object.keys(iframes).forEach(id => {
       iframes[id].iframe.remove();
     });
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 10; i++) {
       insertIframe();
     }
   };
