@@ -16,7 +16,7 @@ const po = new PerformanceObserver((e) => {
           `iframe id: ${cntEntry}, ` +
           `processing end: ${entry.processingEnd.toFixed(1)}, ` +
           `next paint: ${entry.nextPaint.toFixed(1)}, ` +
-          `paintTimes in between: ${JSON.stringify(paintsInRange.map(e=>e.toFixed(1)))}`);
+          `rAFs in between: ${JSON.stringify(paintsInRange.map(e=>e.toFixed(1)))}`);
       }
     }
   }
