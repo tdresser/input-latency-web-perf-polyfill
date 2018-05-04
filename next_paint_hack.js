@@ -19,12 +19,6 @@ var global = this;
     return maxFrameId;
   }
 
-  window.onload = () => {
-    for (let i = 0; i < 10; i++) {
-      insertIframe();
-    }
-  };
-
   function insertIframe() {
     const iframe = document.createElement('iframe');
     iframe.src = 'nextpaint_childframe.html';
@@ -37,21 +31,32 @@ var global = this;
     document.body.appendChild(iframe);
   }
 
+  function resetAllIframes() {
+    Object.keys(iframes).forEach(id => {
+      iframes[id].iframe.remove();
+    });
+    for (let i = 0; i < 30; i++) {
+      insertIframe();
+    }
+  };
+
+  window.onload = resetAllIframes;
+
   global.getNextPaintPromise = function() {
     const frameId = requestFirstPaintFromIframe();
     return new Promise((resolve, reject) => {
+      if (!frameId) {
+        resetAllIframes();
+        resolve(null);
+        return;
+      }
       const iframeEventId = "iframe_" + frameId;
       let received = false;
-      // Check respondancy of iframes regularly
-      setTimeout(()=>{
-        if (!received) throw new Error(`${iframeEventId} is not responding.`);
-      }, 10000);
       const onReceivedIframeEvent = function(e) {
         received = true;
         resolve(e.detail.firstPaint);
         window.removeEventListener(iframeEventId, onReceivedIframeEvent, false);
-        iframes[e.detail.frameId].iframe.remove();
-        insertIframe();
+        iframes[e.detail.frameId].state = "PAINTED";
       };
       window.originalAddEventListener(iframeEventId, onReceivedIframeEvent, false);
     });
@@ -61,9 +66,9 @@ var global = this;
 
   function requestFirstPaintFromIframe() {
     const readyIds = Object.keys(iframes).filter(id => iframes[id].state === "READY");
-    if (readyIds.length === 0) throw new Error("We have to guarantee that there are enough iframes. Try increase the number of iframes");
+    if (readyIds.length === 0) return null;
     const id = readyIds[0];
-    iframes[id].state = "BUSY";
+    iframes[id].state = "PAINTING";
     iframes[id].iframe.contentWindow.postMessage("PAINT", "*");
     logMorePaints(4);
     return id;
@@ -82,7 +87,7 @@ var global = this;
     }
     const now = performance.now();
     paintTimes.push(now);
-    console.log("paint: " + performance.now());
+    // console.log("paint: " + performance.now());
     cntPaintsToLog--;
   }
 

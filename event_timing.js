@@ -12,8 +12,11 @@ var global = this;
     for (const [hash, entry] of pendingEntries.entries()) {
       // Wait until nextPaint is received from the iframe to be dispatch.
       if (entry.nextPaintPromise) {
-        entry.nextPaintPromise.then(nextPaint => {
+        entry.nextPaintPromise.then((nextPaint) => {
           entry.nextPaint = nextPaint;
+          performance.emit(entry);
+        }).catch(()=>{
+          entry.nextPaint = null;
           performance.emit(entry);
         });
         pendingEntries.delete(hash);
