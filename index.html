@@ -1,17 +1,24 @@
 <!DOCTYPE html>
 <html>
 <head>
+<script src="next_paint_hack.js"></script>
 <script src="performance_timeline_emit.js"></script>
 <script src="event_timing.js"></script>
 <script>
-
-// const po = new PerformanceObserver((e) => {
-//   for (let entry of e.getEntries()) {
-//     console.log(JSON.stringify(entry));
-//   }
-// });
-// po.observe({entryTypes:["event"]})
-
+const po = new PerformanceObserver((e) => {
+  for (let entry of e.getEntries()) {
+    console.log(JSON.stringify(entry));
+    if (entry.nextPaint) {
+      const paintsInRange = paintTimes.filter(p => p > entry.processingStart && p < entry.nextPaint);
+      console.log(
+        `processing end: ${entry.processingEnd}, ` +
+        `paintTimes in between: ${paintsInRange.length}, ` +
+        `next paint: ${entry.nextPaint}`);
+      if (paintsInRange.length === 1) debugger;
+    }
+  }
+});
+po.observe({entryTypes:["event"]})
 </script>
 </head>
 <body>
