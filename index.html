@@ -5,19 +5,15 @@
 <script src="performance_timeline_emit.js"></script>
 <script src="event_timing.js"></script>
 <script>
-  let cntEntry = 0;
+  let entryCount = 0;
   const po = new PerformanceObserver((e) => {
     for (let entry of e.getEntries()) {
-      cntEntry++;
-      if (entry.nextPaint) {
-        const paintsInRange = paintTimes.filter(p => p > entry.processingStart && p < entry.nextPaint);
-        console.log(
-          `start time: ${entry.startTime.toFixed(1)}` +
-          `iframe id: ${cntEntry}, ` +
-          `processing end: ${entry.processingEnd.toFixed(1)}, ` +
-          `next paint: ${entry.nextPaint.toFixed(1)}, ` +
-          `rAFs in between: ${JSON.stringify(paintsInRange.map(e=>e.toFixed(1)))}`);
-      }
+      entryCount++;
+      console.log(
+        `start time: ${entry.startTime.toFixed(1)}` +
+        `iframe id: ${entryCount}, ` +
+        `processing end: ${entry.processingEnd.toFixed(1)}, ` +
+        `next paint: ${!entry.nextPaint ? null : entry.nextPaint.toFixed(1)}`);
     }
   });
   po.observe({entryTypes:["event"]});

@@ -1,7 +1,5 @@
 "use strict";
 
-var global = this;
-
 (function() {
   const iframes = {};
 
@@ -42,7 +40,7 @@ var global = this;
 
   window.onload = resetAllIframes;
 
-  global.getNextPaintPromise = function() {
+  window.getNextPaintPromise = function() {
     const frameId = requestFirstPaintFromIframe();
     return new Promise((resolve, reject) => {
       if (!frameId) {
@@ -61,8 +59,6 @@ var global = this;
       window.originalAddEventListener(iframeEventId, onReceivedIframeEvent, false);
     });
   }
-  const paintTimes = [];
-  global.paintTimes = paintTimes;
 
   function requestFirstPaintFromIframe() {
     const readyIds = Object.keys(iframes).filter(id => iframes[id].state === "READY");
@@ -70,26 +66,6 @@ var global = this;
     const id = readyIds[0];
     iframes[id].state = "PAINTING";
     iframes[id].iframe.contentWindow.postMessage("PAINT", "*");
-    logMorePaints(4);
     return id;
   }
-
-  let cntPaintsToLog = 0;
-  function logMorePaints(num) {
-    cntPaintsToLog += num;
-  }
-
-  function logPaintTimes() {
-    window.requestAnimationFrame(logPaintTimes);
-    if (cntPaintsToLog <= 0) {
-      for (let i=0; i<paintTimes.length; i++) paintTimes.pop();
-      return;
-    }
-    const now = performance.now();
-    paintTimes.push(now);
-    console.log("paint: " + performance.now());
-    cntPaintsToLog--;
-  }
-
-  window.requestAnimationFrame(logPaintTimes);
 })();

@@ -1,5 +1,3 @@
-var global = this;
-
 (function () {
   'use strict';
 
@@ -10,7 +8,7 @@ var global = this;
   function rIC() {
     window.requestIdleCallback(rIC);
     for (const [hash, entry] of pendingEntries.entries()) {
-      // Wait until nextPaint is received from the iframe to be dispatch.
+      // Wait until nextPaint is received from the iframe before dispatching entries.
       if (entry.nextPaintPromise) {
         entry.nextPaintPromise.then((nextPaint) => {
           entry.nextPaint = nextPaint;
@@ -50,7 +48,7 @@ var global = this;
   }
 
   const originalAddEventListener = EventTarget.prototype.addEventListener;
-  global.originalAddEventListener = originalAddEventListener;
+  window.originalAddEventListener = originalAddEventListener;
 
   EventTarget.prototype.addEventListener = function(type, f, args) {
     originalAddEventListener.call(this, type, (e) => {

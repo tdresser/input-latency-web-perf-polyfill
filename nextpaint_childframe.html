@@ -16,11 +16,11 @@
     }
   };
   new PerformanceObserver((entryList, observer)=>{
-    const es = entryList.getEntriesByName("first-paint");
-    if (es.length === 0) return;
+    const entries = entryList.getEntriesByName("first-paint");
+    if (entries.length === 0) return;
     observer.disconnect();
     top.postMessage({
-      "firstPaint": es[0].startTime + performance.timeOrigin,
+      "firstPaint": entries[0].startTime + performance.timeOrigin,
       "frameId": window.name
     }, "*");
   }).observe({entryTypes: ["paint"]});
