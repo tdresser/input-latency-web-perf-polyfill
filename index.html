@@ -11,13 +11,12 @@
       cntEntry++;
       if (entry.nextPaint) {
         const paintsInRange = paintTimes.filter(p => p > entry.processingStart && p < entry.nextPaint);
-        // if (paintsInRange.length === 1) {
-          console.log(
-            `iframe id: ${cntEntry}, ` +
-            `processing end: ${entry.processingEnd.toFixed(1)}, ` +
-            `next paint: ${entry.nextPaint.toFixed(1)}, ` +
-            `rAFs in between: ${JSON.stringify(paintsInRange.map(e=>e.toFixed(1)))}`);
-        // }
+        console.log(
+          `start time: ${entry.startTime.toFixed(1)}` +
+          `iframe id: ${cntEntry}, ` +
+          `processing end: ${entry.processingEnd.toFixed(1)}, ` +
+          `next paint: ${entry.nextPaint.toFixed(1)}, ` +
+          `rAFs in between: ${JSON.stringify(paintsInRange.map(e=>e.toFixed(1)))}`);
       }
     }
   });
