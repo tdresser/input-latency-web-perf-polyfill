@@ -5,23 +5,23 @@
 <script src="performance_timeline_emit.js"></script>
 <script src="event_timing.js"></script>
 <script>
-let cntEntry = 0;
-const po = new PerformanceObserver((e) => {
-  for (let entry of e.getEntries()) {
-    cntEntry++;
-    if (entry.nextPaint) {
-      const paintsInRange = paintTimes.filter(p => p > entry.processingStart && p < entry.nextPaint);
-      if (paintsInRange.length === 1) {
-        console.log(
-          `iframe id: ${cntEntry}, ` +
-          `processing end: ${entry.processingEnd.toFixed(1)}, ` +
-          `next paint: ${entry.nextPaint.toFixed(1)}, ` +
-          `rAFs in between: ${JSON.stringify(paintsInRange.map(e=>e.toFixed(1)))}`);
+  let cntEntry = 0;
+  const po = new PerformanceObserver((e) => {
+    for (let entry of e.getEntries()) {
+      cntEntry++;
+      if (entry.nextPaint) {
+        const paintsInRange = paintTimes.filter(p => p > entry.processingStart && p < entry.nextPaint);
+        // if (paintsInRange.length === 1) {
+          console.log(
+            `iframe id: ${cntEntry}, ` +
+            `processing end: ${entry.processingEnd.toFixed(1)}, ` +
+            `next paint: ${entry.nextPaint.toFixed(1)}, ` +
+            `rAFs in between: ${JSON.stringify(paintsInRange.map(e=>e.toFixed(1)))}`);
+        // }
       }
     }
-  }
-});
-po.observe({entryTypes:["event"]})
+  });
+  po.observe({entryTypes:["event"]});
 </script>
 </head>
 <body>

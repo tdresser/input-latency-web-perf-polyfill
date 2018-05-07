@@ -87,7 +87,7 @@ var global = this;
     }
     const now = performance.now();
     paintTimes.push(now);
-    // console.log("paint: " + performance.now());
+    console.log("paint: " + performance.now());
     cntPaintsToLog--;
   }
 

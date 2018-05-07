@@ -70,7 +70,7 @@ var global = this;
     }, args);
   };
 
-  const eventTypeNames = ["click", "mousemove", "keydown", "input", "keyup", "touchstart", "touchmove", "pointerdown"]
+  const eventTypeNames = ["click", "mousemove", "keydown", "input", "keyup", "touchstart", "touchmove", "pointerdown"];
   for (let i of eventTypeNames) {
     document.addEventListener(i, () => {});
   }
