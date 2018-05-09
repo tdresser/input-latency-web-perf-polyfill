@@ -8,8 +8,20 @@
   function rIC() {
     window.requestIdleCallback(rIC);
     for (const [hash, entry] of pendingEntries.entries()) {
-      performance.emit(entry);
-      pendingEntries.delete(hash);
+      // Wait until nextPaint is received from the iframe before dispatching entries.
+      if (entry.nextPaintPromise) {
+        entry.nextPaintPromise.then((nextPaint) => {
+          entry.nextPaint = nextPaint;
+          performance.emit(entry);
+        }).catch(()=>{
+          entry.nextPaint = null;
+          performance.emit(entry);
+        });
+        pendingEntries.delete(hash);
+      } else {
+        performance.emit(entry);
+        pendingEntries.delete(hash);
+      }
     }
   }
 
@@ -20,21 +32,24 @@
 
   function addOrCoalesceEntry(e, newEntryData) {
     window.requestIdleCallback(rIC);
-
     const hash = eventHash(e);
-    const entry = pendingEntries.get(hash);
+    let entry = pendingEntries.get(hash);
     if (!entry) {
       pendingEntries.set(hash, newEntryData);
-      return newEntryData;
+      entry = newEntryData;
+    } else {
+      // We aren't certain this is the last event listener. Overwrite
+      // processingEnd each time another listener ends. We'll see the correct end
+      // time in the idle callback.
+      entry.processingEnd = newEntryData.processingEnd;
     }
-    // We aren't certain this is the last event listener. Overwrite
-    // processingEnd each time another listener ends. We'll see the correct end
-    // time in the idle callback.
-    entry.processingEnd = newEntryData.processingEnd;
+    if (!entry.nextPaintPromise) entry.nextPaintPromise = getNextPaintPromise();
     return entry;
   }
 
   const originalAddEventListener = EventTarget.prototype.addEventListener;
+  window.originalAddEventListener = originalAddEventListener;
+
   EventTarget.prototype.addEventListener = function(type, f, args) {
     originalAddEventListener.call(this, type, (e) => {
       const processingStart = performance.now();
@@ -53,7 +68,7 @@
     }, args);
   };
 
-  const eventTypeNames = ["click", "mousemove", "keydown", "input", "keyup", "touchstart", "touchmove", "pointerdown"]
+  const eventTypeNames = ["click", "mousemove", "keydown", "input", "keyup", "touchstart", "touchmove", "pointerdown"];
   for (let i of eventTypeNames) {
     document.addEventListener(i, () => {});
   }
