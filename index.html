@@ -5,18 +5,13 @@
 <script src="performance_timeline_emit.js"></script>
 <script src="event_timing.js"></script>
 <script>
-  let entryCount = 0;
-  const po = new PerformanceObserver((e) => {
-    for (let entry of e.getEntries()) {
-      entryCount++;
-      console.log(
-        `start time: ${entry.startTime.toFixed(1)}` +
-        `iframe id: ${entryCount}, ` +
-        `processing end: ${entry.processingEnd.toFixed(1)}, ` +
-        `next paint: ${!entry.nextPaint ? null : entry.nextPaint.toFixed(1)}`);
-    }
-  });
-  po.observe({entryTypes:["event"]});
+const po = new PerformanceObserver((e) => {
+  for (let entry of e.getEntries()) {
+    console.log(entry);
+    console.log(entry.duration);
+  }
+});
+po.observe({entryTypes:["event"]});
 </script>
 </head>
 <body>

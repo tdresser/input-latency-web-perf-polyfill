@@ -11,14 +11,17 @@
       // Wait until nextPaint is received from the iframe before dispatching entries.
       if (entry.nextPaintPromise) {
         entry.nextPaintPromise.then((nextPaint) => {
-          entry.nextPaint = nextPaint;
+          entry.duration = nextPaint - entry.startTime;
+          delete entry.nextPaintPromise;
           performance.emit(entry);
         }).catch(()=>{
-          entry.nextPaint = null;
+          entry.duration = entry.processingEnd - entry.startTime;
+          delete entry.nextPaintPromise;
           performance.emit(entry);
         });
         pendingEntries.delete(hash);
       } else {
+        delete entry.nextPaintPromise;
         performance.emit(entry);
         pendingEntries.delete(hash);
       }
